@@ -1,0 +1,13 @@
+A brief description of the screenshot:
+
+upperleft: a hierarchial tree of all the commits with their different
+branches and relationships.
+
+uppermiddle: a list of authors and their emails for their commits.
+
+upperright: the corresponding time of the commits.
+
+lowerleft: the ChangeLog of the commit and some useful tools such as
+find and search.
+
+lowerright: a list of files that are affected by the corresponding commit.

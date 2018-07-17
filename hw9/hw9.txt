@@ -1,0 +1,76 @@
+A notebook for the Homework: Verifying and publishing a backported change
+
+1. vim hw9.txt
+
+2. Check out version 3.0 of Diffutils into a new branch "quote":
+   cd diffutils
+   git checkout v3.0 -b quote
+
+3. Install the change to the branch:
+   When I used the command:
+   patch -p1 </u/eng/class/classkrn/Cmanagement/quote-3.0-patch.txt
+   It gave me a message:
+   Reversed (or previously applied) patch detected!  Assume -R? [n]
+   So I switched to the master branch first and delete the "quote" branch.
+   Then I created the branch "quote" again. (suggestions on piazza):
+   git checkout -f master
+   git branch -d quote
+   git checkout v3.0 -b quote
+
+   Now I could apply the patch:
+   patch -p1 </u/eng/class/classkrn/Cmanagement/quote-3.0-patch.txt
+It outputs:
+patching file src/cmp.c
+patching file src/diff.c
+patching file src/diff3.c
+patching file src/dir.c
+patching file src/sdiff.c
+patching file src/util.c
+ 
+4. I learned how to use the emacs function add-change-log-entry-other-window.
+
+5. Compose an appropriate ChangeLog entry for the patch:
+   I first used git status to get a list of changed .c files.
+   Then I used emacs to open each of the following six files and 
+   used C-x 4 a to add a changelog:
+   src/cmp.c src/diff.c src/diff3.c src/dir.c src/sdiff.c src/util.c
+   I described the change as: 
+   Replacing ` with ' for character string constants.
+
+6. Commit the changes to the branch:
+   git add .
+   git commit -F ChangeLog
+
+7. Generate the file formatted-patch.txt:
+   git format-patch -1 --stdout > formatted-patch.txt
+
+8. Check my partner's patch:
+   my partner: Weijia Shi from Lab 7
+   I copied her patch into a file named sformatted-patch.txt.
+   Then I made a new branch for her: git checkout v3.0 -b partner
+   ./boostrap
+   ./configure
+   make
+   
+   Then I ran the command:
+   diff . -
+   diff --help
+
+   They both output ' instead of ` at the specific places. The patch works.
+
+9. Verify that my ChangeLog entry works:
+   make distdir
+   Then I entered the folder and used emacs to inspect the file.
+   I could see my Changelog so the ChangeLog entry works.
+
+10. Because I was working on mac, so I opened the terminal in XQuartz:
+    ssh -X classkrn@lnxsrv09.seas.ucla.edu
+    export PATH=/usr/local/cs/bin:$PATH
+    echo $PATH
+    cd Cmanagement
+    cd homework
+    cd emacs
+    gitk
+
+    The newest merge that is not newer than 2015-01-25 I found is:
+    2015-01-25 23:56:37
