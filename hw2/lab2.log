@@ -1,0 +1,252 @@
+A lab notebook: Spell-checking Hawaiian
+
+1. I firstly used the following command to ensure that the shell command
+locale outputs LC_CTYPE="C" or LC_CTYPE="POSIX":
+   export LC_ALL='C'
+
+2. Then I sorted the contents of the file /usr/share/dict/words:
+   sort -u -o words /usr/share/dict/words
+
+3. I got a text file containing the HTML in the assignment's web page:
+   wget https://web.cs.ucla.edu/classes/winter18/cs35L/assign/assign2.html
+   cp assign2.html assign2.txt
+
+4. Then I ran the following commands as required:
+   tr -c 'A-Za-z' '[\n*]' < assign2.txt
+We can see that this outputs words that contain A-Z or a-z along with
+lots of empty lines. This is because that we use the tr command with the
+-c option. It complements the set of upper case and lower case letters and
+replaces others that does not have such characters with newline characters.
+
+   tr -cs 'A-Za-z' '[\n*]' < assign2.txt
+We can see that instead of a bunch of empty lines, this only displays one
+empty line along with the words that contain A-Z or a-z. This is because that
+we use the tr command with the -cs option. Besides the complement, it also
+squeezes multiple occurrences of newline characters.
+
+   tr -cs 'A-Za-z' '[\n*]' < assign2.txt | sort
+We can see that in addition, the output is sorted in the order of A-Z and a-z.
+This is because we use the tr command along with sort.
+
+   tr -cs 'A-Za-z' '[\n*]' < assign2.txt | sort -u
+We can see that it not only outputs words in sorted order but also deletes
+duplicate words. This is because that we use the sort command with the -u
+option. It will suppress all but one in each set of lines having equal keys.
+So it makes every word "unique".
+
+   tr -cs 'A-Za-z' '[\n*]' < assign2.txt | sort -u | comm - words
+We can see that it outputs three columns of words. The first column lists
+the words that only exist in "assign2.txt". (which are the words produced by
+the previous command.) The second column lists the words that only exist in
+the file "words". The third column lists the words that exist in both files.
+This is because we use the comm command to compare the words in the two files.
+
+   tr -cs 'A-Za-z' '[\n*]' < assign2.txt | sort -u | comm -23 - words
+We can see that this outputs only the first column of the results produced
+by the previous command. (the words that only exist in "assign2.txt".) This
+is because we use the -23 option. It removes the second and third columns of
+the output by the previous command.
+
+5. I obtained the copy of the web page "English to Hawaiian":
+wget http://mauimapp.com/moolelo/hwnwdseng.htm
+
+6. I built the srcipt.
+   #!/bin/bash
+
+   extract lines which contain words (between <td> and </td>):
+   grep '<td>.*</td>' |
+
+   remove all the "\":
+   sed 's/\///g' |
+
+   remove all the "<td>":
+   sed 's/<td>//g' |
+
+   remove all HTML tags:
+   sed 's/<[^>]*>//g' |
+
+   remove leading space:
+   sed 's/^\s*//g' |
+
+   remove empty lines:
+   sed '/^$/d' |
+
+   get lines with Hawaiian words (extract even numbered lines):
+   awk 'NR % 2 == 0' |
+
+   remove all <u>:
+   sed 's/<u>//g' |
+
+   treat all upper case letters as lower case letters:
+   tr '[:upper:]' '[:lower:]' |
+
+   replace ` with ':
+   sed s/\`/\'/g |
+   
+   replace space with newline characters:
+   sed 's/ /\n/g' |
+
+   remove all commas:
+   sed 's/,//g' |
+
+   remove improperly formatted words:
+   sed '/-/d' |
+
+   remove entries which contain non-Hawaiian letters:
+   tr -cs "pk\'mnwlhaeiou" '[\n*]' |
+   
+   remove empty lines:
+   sed '/^$/d' |
+
+   sort unique:
+   sort -u
+
+7. I gave permission to execute the file:
+   chmod +x buildwords
+
+8. I made the Hawaiian dictionary called "hwords":
+   cat hwnwdseng.htm | ./buildwords > hwords
+
+9. Count the number of misspelled English:
+   cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | tr '[:upper:]' '[:lower:]' | 
+   sort -u | comm -23 - words > misspelledEng
+
+   I opened the file "misspelledEng" and found that the number of "misspelled"
+   English is 38.
+
+10. Count the number of misspelled Hawaiian:
+    cat assign2.html | tr -cs "pk\'mnwlhaeiou" '[\n*]' | 
+    tr '[:upper:]' '[:lower:]' | sort -u | comm -23 - hwords > misspelledHaw
+
+    I opened the file "misspelledHaw" and found that the number of "misspelled"
+    Hawaiian is 198.
+
+11. I looked for any words that are "misspelled" as English, 
+    but not as Hawaiian:
+    cat misspelledEng | tr -cs "pk\'mnwlhaeiou" '[\n*]' |
+    sort -u | comm -12 - hwords > check1 
+
+    Examples are as follows:
+    e
+    halau
+    i
+    lau
+    po
+    wiki
+
+12. I looked for any words that are "misspelled" as Hawaiian, 
+    but not as English:
+    cat misspelledHaw | tr -cs 'A-Za-z' '[\n*]' | 
+    sort -u | comm -12 - words > check2
+
+    Examples are as follows:
+    a
+    ail
+    ain
+    ake
+    al
+    ale
+    alen
+    all
+    amine
+    amp
+    ample
+    an
+    aph
+    aul
+    awk
+    e
+    ea
+    ee
+    el
+    em
+    emp
+    en
+    ep
+    epa
+    h
+    ha
+    han 
+    hap
+    he
+    hei
+    hell
+    hem
+    hen
+    hi
+    hin
+    ho
+    how
+    howe
+    ia
+    ie
+    ile
+    imp
+    in
+    ion
+    iou
+    k
+    keep
+    kin
+    l
+    lan
+    le
+    lea
+    li
+    like
+    line
+    link
+    ll
+    ln
+    lo
+    lowe
+    m
+    mail
+    man
+    me
+    men
+    mi
+    ml
+    mo
+    mp
+    n
+    name
+    ne
+    nee
+    no
+    non
+    nu
+    num
+    o
+    om
+    on
+    one
+    op
+    ope
+    open
+    owe
+    own
+    p
+    pe
+    pell
+    people
+    plea
+    pu
+    u
+    ui
+    ula
+    ule
+    ume
+    ump
+    un
+    uni
+    w
+    wa
+    wan
+    we
+    wh
+    wha
+    who
+    wi
+    wo
+

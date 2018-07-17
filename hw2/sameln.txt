@@ -1,0 +1,43 @@
+#!/bin/sh
+
+export LC_ALL='C'
+OLDIFS=$IFS
+IFS="$(printf '\n')"
+
+find -maxdepth 1 -type f | sort > interfile
+
+cat interfile | while read k
+do
+  k="$1/$k"
+done
+cat interfile | while read -r m
+do
+    if [ -L "$m" ]
+    then
+        :
+    elif [ ! -f "$m" ]
+    then
+        :
+    elif [ ! -r "$m" ]
+    then
+        echo "error! $m is not readable."
+    else
+        cat interfile | while read -r n
+        do
+            cmp -s "$m" "$n"
+            if [ $? -eq 0 ]
+            then
+                if [ ! "$m" -ef "$n" ]
+                then
+                    ln -f "$m" "$n"
+                fi
+            elif [ $? -gt 1 ]
+            then
+                echo "error!"
+            fi
+         done
+    fi
+done
+
+rm interfile
+IFS=$OLDIFS  
