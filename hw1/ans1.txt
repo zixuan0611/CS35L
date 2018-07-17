@@ -1,0 +1,425 @@
+Laboratory: Linux and Emacs scavenger hunt
+
+1. command: man -k keyword 
+I used the command "man man"
+and then read the manual man page (especially for the description part)
+to find this command: man -k keyword, 
+where keyword is the specific word we need to search for.
+
+2. command: which cp
+	    which wc
+It can use which command or whereis command to locate the program.
+I used which command and find that:
+cp /usr/local/cs/bin/cp
+wc /usr/local/cs/bin/wc 
+
+3. Firstly, I used the command: find /usr/bin/ -name '?'
+I found the following:
+/usr/bin/X
+/usr/bin/w
+/usr/bin/[
+Then I used the following command to figure out what they do:
+man X
+man w
+man [
+man bash
+I got the following results:
+X: a portable, network-transparent window system
+w: show who is logged on and what they are doing
+[: for conditional evaluation (a bash built-in command)
+
+4. Firstly I used the command: man -k symbolic
+Then I read all the commands that have the word "symbolic" in the description.
+I found the command: readlink /usr/bin/emacs
+It shows that the file is: /etc/alternatives/emacs
+
+5. Firstly I used the command: man chmod
+Then I read the page to get the meaning of '+', '-', 'g', 's', 'o', 'x'.
++: add the selected file mode bits
+-: remove the selected file mode bits
+g: the permissions granted to other users who are members of the file's group
+s: set user or group ID on execution
+o: other users not in the file's group
+x: execute (or search for directories)
+Therefore,
+g+s: set the group ID on execution
+(newly created files in the current directory get the directory's group ID)
+o-x: remove the permission of other users not in the file's group to execute
+
+6. I used the command "man find" to find the answer.
+The option to find for the required search is: -mtime -21
+(21 means 21*24 hours, in other words, three weeks)
+
+7. I used the command "man find" and read the manual page.
+Then I figured out that the command should be: find -mtime -21 -type d
+And it then gave the following output:
+.
+./Documents
+./.cache/abrt
+./.emacs.d
+./.emacs.d/auto-save-list
+
+8. I searched for the command by reading the manual page (man find).
+I firstly got into the directory: cd /usr/bin
+I typed the command: find -type l
+It gave the following output:
+./xzegrep
+./htxelatex
+./mysql_config
+./gpgv
+./lpstat
+./pnmcomp
+./mac2unix
+./texconfig-dialog
+./latex
+./gnatgcc
+./dvired
+./jstack
+./pnmenlarge
+./wsgen
+./apropos
+./mk4ht
+./pstack
+./rmid
+./sgml2xml
+./nmtui-connect
+./htcontext
+./wish
+./kpsewhere
+./pgmedge
+./dot2gxl
+./jstat
+./bzless
+./jconsole
+./mailq.postfix
+./kpsetool
+./kpsepath
+./kdesu
+./pmiostat
+./gjs
+./xjc
+./osage
+./db2rtf
+./jps
+./pbmtoicon
+./sgmlnorm
+./flipdiff
+./sfdp
+./lualatex
+./setup
+./allneeded
+./twopi
+./ghc-pkg
+./newaliases.sendmail
+./pamon
+./ebb
+./geqn
+./makeinfo
+./xmltex
+./links
+./bmptoppm
+./javac
+./rmail
+./patchwork
+./ghci
+./httexi
+./fmtutil
+./texconfig
+./gimp
+./rmiregistry
+./jade
+./gtar
+./captoinfo
+./latrace-ctl
+./emacs
+./htmex
+./circo
+./jrunscript
+./pstree.x11
+./gnome-keyring
+./traceroute6
+./lastb
+./pax
+./ghc
+./ghostscript
+./readcd
+./tclsh
+./el4-rpmlint
+./i386
+./rmic
+./nmtui-hostname
+./flex++
+./newaliases.postfix
+./unpack200
+./lex
+./gpg
+./X
+./cdrecord
+./jdb
+./dvi2fax
+./jsadebugd
+./gmake
+./purgestat
+./texluac
+./ppmtojpeg
+./jcmd
+./runhaskell
+./view
+./native2ascii
+./bzcmp
+./unix2mac
+./tnameserv
+./httex
+./jar
+./orbd
+./servertool
+./jadetex
+./gsoelim
+./open
+./dvilualatex
+./bunzip2
+./mkluatexfontdb
+./idlj
+./systemd-loginctl
+./x86_64
+./reset
+./pmcollectl
+./updmap-sys
+./jhat
+./csh
+./pnmsplit
+./pngtopnm
+./pnmfile
+./updmap
+./serialver
+./gimp-console
+./pnmscale
+./jdeps
+./jstatd
+./gtbl
+./haddock
+./bzcat
+./byacc
+./lpq
+./pgmslice
+./texlua
+./ping6
+./dvipdfm
+./rvim
+./lsdiff
+./jmap
+./extcheck
+./ex
+./pnmarith
+./fdp
+./javah
+./pmatop
+./texhash
+./psfstriptable
+./sh
+./wsimport
+./paplay
+./grepdiff
+./gv2gxl
+./systemd-coredumpctl
+./rpmquery
+./python
+./parecord
+./desktop-file-edit
+./nmtui-edit
+./pgmoil
+./texconfig-sys
+./jjs
+./pnmdepth
+./rpmverify
+./appletviewer
+./thumbpdf
+./nisdomainname
+./extractbb
+./newaliases
+./vimdiff
+./pdfetex
+./runghc
+./texlinks
+./pgmnorm
+./xzcat
+./rnano
+./initex
+./psfaddtable
+./dnsdomainname
+./hsc2hs
+./hoststat
+./combinediff
+./f95
+./mailq
+./hwloc-ls
+./pdfjadetex
+./mkisofs
+./java
+./dvdrecord
+./pnmtotiff
+./pnmtopnm
+./pnmnoraw
+./javap
+./javaws
+./spent
+./etex
+./rview
+./arecord
+./ht
+./nfs4_editfacl
+./pdflatex
+./lprm
+./nail
+./phar
+./xzcmp
+./dviluatex
+./python2-config
+./python2
+./chsh
+./rhn_register
+./pnminterp
+./pmevent
+./subscription-manager
+./pnmtofits
+./ksh
+./nc
+./psfgettable
+./el5-rpmlint
+./lp
+./domainname
+./zsoelim
+./kpsexpand
+./jinfo
+./sg
+./makemap
+./pack200
+./icontopbm
+./infotocap
+./slogin
+./parec
+./iptables-xml
+./ppmnorm
+./atq
+./gtroff
+./spam
+./mailq.sendmail
+./neato
+./gemtopbm
+./gneqn
+./keytool
+./cc
+./setup-nsssysinit
+./gnroff
+./linux64
+./javadoc
+./ypdomainname
+./ld
+./ppmquantall
+./nsgmls
+./mock
+./db2pdf
+./bashbug
+./schemagen
+./atrm
+./pnmcut
+./rvi
+./Mail
+./fmtutil-sys
+./htxetex
+./runhaskell-ghc
+./libpng-config
+./gnuplot
+./linux32
+./db2ps
+./gpic
+./mptopdf
+./simpdftex
+./gxl2dot
+./allec
+./passwd
+./unxz
+./db2dvi
+./xzfgrep
+./mktexfmt
+./jarsigner
+./mail
+./ppmtouil
+./mkhybrid
+./allcm
+./pdfxmltex
+./rksh
+./awk
+./htlatex
+./lpr
+./python-config
+./inimf
+./cancel
+./etags
+
+In total, there are 293 symbolic links.
+
+9. I used the command "man ls" to find the command.
+I firstly got into the directory: cd /usr/lib
+Then I used the command: ls -lt
+I found the oldest regular file as follows:
+-rwxr-xr-x   1 root root   18692 Jan 26  2014 libgpg-error.so.0.10.0
+
+10. I used the command "man locale" and "man localedef" to find the answer.
+The current locale settings are based on:
+the setting of the environment variables that control the locale.
+So it gets its data from the environment variables.
+Also, localedef compiles locale definition files, locale can get data from it.
+
+11. I used the following commands:
+emacs
+C-h a sort
+C-x o
+And I found the following commands that have sort in their name:
+Buffer-menu-sort
+sort-columns
+sort-fields
+sort-lines
+sort-numeric-fields
+sort-pages
+sort-paragraphs
+sort-regexp-fields
+tabulated-list-col-sort
+tabulated-list-sort
+
+12. emacs
+I used the command: C-h k and then typed the command we need to search.
+C-M-a: Move backward to the beginning of a defun.
+C-M-b: Move backward across one balanced expression (sexp).
+C-M-c: Exit from the innermost recursive edit or minibuffer.
+C-M-d: Move forward down one level of parentheses.
+C-M-e: Move forward to next end of defun.
+C-M-f: Move forward across one balanced expression (sexp).
+C-M-g: undefined
+C-M-h: Put mark at end of this defun, point at beginning.
+
+13. emacs
+I used the command: C-h k and then typed the command: C-g
+Then I typed C-x o and I found that:
+C-g runs the command keyboard-quit (found in global-map), which is an
+interactive compiled Lisp function in ‘simple.el’.
+Basically, C-g signals a ‘quit’ condition.
+During execution of Lisp code, this character causes a quit directly.
+Additionally, at top-level, as an editor command, this simply beeps.
+
+14. emacs
+I used the command: C-h f and then typed "yank".
+I found the following:
+(yank is an interactive compiled Lisp function in ‘simple.el’.
+It is bound to C-y, <S-insertchar>, <S-insert>, <menu-bar> <edit> <paste>.)
+This function mainly reinserts ("paste") the last stretch of killed text.
+
+15. command: ls -1
+	     emacs
+	     C-x d
+	     C-x C-c
+By comparing the results, I found that: 
+Emacs dired command also shows the files beginning with ".", ".."
+But "ls -1" does not show these files.
+Also, dired command displays more detailed information for the files.
+(such as the date, etc.)
