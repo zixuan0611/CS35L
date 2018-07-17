@@ -1,0 +1,181 @@
+A lab notebook for the laboratory: SSH setup and use in applications
+
+My team member: Kris, Huiying.
+
+1. do the preparation for the set up of my beaglebone, 
+   following the instructions on piazza.
+
+2. ssh into my beaglebone:
+   sudo ssh root@192.168.7.2
+
+3. connect wifi (we use Kris's mobile hotspot to complete this lab)
+   sudo connmanctl
+   connmanctl> enable wifi
+   connmanctl> scan wifi
+   connmanctl> services
+   connmanctl> agent on
+   connmanctl> connect wifi_2cf7f106177e_4b7269733a29_managed_psk
+   connmanctl> quit
+
+4. we check the wifi connection and find out my ip address:
+   ifconfig
+for me: wlan0 inet addr:172.20.10.10
+
+5. update the database of apt-get
+   sudo apt-get update
+
+6. install everything we need for this lab:
+   sudo apt-get install xauth
+   apt-get install firefox-esr-l10n-en-gb
+   sudo apt-get install emacs
+   sudo apt-get install xterm
+   sudo apt-get install gedit
+   sudo apt-get install firefox
+   sudo apt-get install openssh-server
+   sudo apt-get install openssh-client
+   sudo apt-get install xvfb 
+
+7. generate public and private keys:
+   ssh-keygen (choose the default file)
+   our passphrase: 123456
+   the output:
+Your identification has been saved in /root/.ssh/id_rsa.
+Your public key has been saved in /root/.ssh/id_rsa.pub.
+The key fingerprint is:
+7c:2b:7a:2a:bf:f7:4b:8e:c9:5a:db:f1:6b:91:02:28 root@beaglebone
+The key's randomart image is:
++---[RSA 2048]----+
+|                 |
+|                 |
+|       .         |
+|    E ...        |
+|     .  S..  .   |
+|         ...o    |
+|        o +. .   |
+|    .  +oO o.    |
+|     o**=.=oo.   |
++-----------------+
+
+8. we disable the password-based authentication:
+   sudo emacs /etc/ssh/sshd_config
+   (go to the line 52 and change "yes" to "no")
+
+9. first I set up a server and kris set up client account:
+   sudo useradd -d /home/kris20 -m kris20
+   sudo passwd kris20
+   (new UNIX password: 123456)
+   cd /home/kris20
+   sudo mkdir .ssh
+   sudo chown -R kris20 .ssh
+   sudo chmod 700 .ssh
+
+Then Kris logged into my host, I use the followig command to check:
+   ps aux
+The relevant output:
+kris20    3732  0.4  0.6   9220  3276 ?        S    04:09   0:00 sshd: kris20@pt
+kris20    3733  0.0  0.2   1440  1012 pts/1    Ss   04:09   0:00 -sh
+
+Then Kris typed the command xterm and got the shell window,
+I use the following command to check:
+   ps aux
+The relevant output:
+kris20    3739  0.4  0.8   7396  4192 pts/1    S+   04:09   0:00 xterm
+kris20    3741  0.0  0.1   1440   908 pts/2    Ss+  04:10   0:00 sh
+
+Then Kris typed the command gedit and got the shell window,
+I use the following command to check:
+   ps aux
+The relevant output:
+kris20    3752 13.8  4.5  50644 22948 pts/1    Sl+  04:11   0:07 gedit
+
+Then Kris typed the command firefox and got the shell window,
+I use the following command to check:
+   ps aux
+The relevant output:
+kris20    3763 63.9 27.6 617864 139548 pts/1   Sl+  04:13   0:21 firefox-esr
+kris20    3807  2.8  3.8  94520 19404 pts/1    Sl+  04:13   0:00 /usr/lib/firefo
+
+Finally I stepped out the directory:
+cd ~
+
+10. generate public and private keys again:
+    ssh-keygen (choose the default file)
+    our passphrase: 123456
+    the output:
+Your identification has been saved in /root/.ssh/id_rsa.
+Your public key has been saved in /root/.ssh/id_rsa.pub.
+The key fingerprint is:
+d9:a9:78:73:b9:f5:dd:ce:57:c1:5b:c7:29:18:5a:43 root@beaglebone
+The key's randomart image is:
++---[RSA 2048]----+
+|          .E     |
+|           +     |
+|          o + ...|
+|         + o . ++|
+|        S o   . =|
+|       . . .   ..|
+|      . + o .   .|
+|       . o o . oo|
+|          .   ..*|
++-----------------+
+
+11. This time, I set up the client account and Kris set up the host account:
+    ssh-copy-id -i zixuan10@172.20.10.8
+    (password: zixuan)
+    ssh-add
+    ssh 'zixuan10@172.20.10.8'
+
+Because my mac is the newest version, I installed "XQuartz" on my mac,
+and then followed the instructions on piazza.
+I opened the terminal in XQuartz:
+sudo ssh -X debian@192.168.7.2
+debian@beaglebone: ssh -X zixuan10@172.20.10.8
+
+Then I logged into Kris host, Kris use the followig command to check:
+   ps aux 
+The relevant output: 
+zixuan10  4285  0.8  0.6   9220  3188 ?        S    04:25   0:00 sshd: zixuan10@
+zixuan10  4286  0.0  0.1   1440   960 pts/7    Ss   04:25   0:00 -sh
+
+Then I typed the command xterm in XQuartz and got the shell window,
+Kris use the following command to check:
+   ps aux
+The relevant output:
+zixuan10  4292  0.8  0.8   7396  4104 pts/7    S+   04:25   0:00 xterm
+zixuan10  4294  0.0  0.1   1440   952 pts/8    Ss+  04:25   0:00 sh
+
+Then I typed the command gedit in XQuartz and got the shell window,
+Kris use the following command to check:
+   ps aux
+The relevant output:
+zixuan10  4301 31.9  4.5  50664 22816 pts/7    Sl+  04:26   0:06 gedit
+
+Then I typed the command firefox in XQuartz and got the shell window,
+Kris use the following command to check:
+   ps aux
+The relevant output:
+zixuan10  4316 52.0 25.0 604552 126248 pts/7   Sl+  04:28   0:25 firefox-esr
+zixuan10  4364  3.8  3.8  94520 19492 pts/7    Sl+  04:29   0:00 /usr/lib/firefo
+
+Finnaly I closed the terminal in XQuartz.
+
+12. At last, I also set up a client account to logged into Huiying's host.
+This step is similar to step 11 but the username is kris21.
+(ssh-copy-id -i kris21@172.20.10.9)
+The final results were checked by Huiying:
+
+for login:
+kris21    3508  0.7  0.6   9220  3204 ?        S    04:44   0:00 sshd: kris21@pt
+kris21    3509  0.0  0.1   1440  1000 pts/2    Ss   04:44   0:00 -sh
+
+for xterm:
+kris21    3515  0.8  0.8   7396  4100 pts/2    S+   04:44   0:00 xterm
+kris21    3521  0.0  0.1   1440   980 pts/3    Ss+  04:45   0:00 sh
+
+for gedit:
+kris21    3529 30.9  4.5  50512 22700 pts/2    Sl+  04:46   0:03 gedit
+
+for firefox:
+kris21    3539 66.2 27.1 607624 136972 pts/2   Rl+  04:46   0:21 firefox-esr
+kris21    3590  4.2  3.8  94520 19560 pts/2    Sl+  04:47   0:00 /usr/lib/firefo
+

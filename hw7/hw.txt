@@ -1,0 +1,30 @@
+The answers to the homework:
+
+1. Yes, the resulting network is still secure even if the other teams really
+had been observing all the bytes going across the network. Because the other
+teams cannot have my private key. Basically, our messages would be encrypted
+by the public key frist but need to be decrepted by the private key. Since,
+the encrypted message after the authentication process cannot be figured out
+by current technology of computation and the other teams have no way to find
+our private key to decode the message, the resulting network is still secure.
+
+(1) It is still secure if the other teams had also tapped your keyboards 
+and had observed all of your team's keystrokes. Because even if they know
+our passphrase by observing the keystrokes, the generated private key is
+still different. Since the private keys have nothing to do with the keyboard
+inputs, other teams still have no idea about what the private key looks like.
+Besides, in the case of no password required to log in, it is also secure.
+
+(2) It is not secure if you are booting off USB and you assume the other 
+teams temporarily had physical control of the USB. Because the key data is
+stored in the USB and thus other teams can get our private key if they had
+physical control of the USB. The messages of our team can be decrypted by
+using the private key, so the network is not secure.
+
+2. Basically, gpg --verify command verifies if the cleartext signature matches
+the public key. Hence, it cannot verify whether I personally created the tar
+file due to the reason that it only tests the match and shows if it is a good
+signature without giving the information of the creator.
+
+We can fix it by relying on the certificate authority. Its main task is to
+certifies the ownership of the public key.
