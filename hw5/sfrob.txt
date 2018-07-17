@@ -1,0 +1,92 @@
+Since the spec says "Frobnicated text lines consist of a series of non-space
+bytes followed by a single space; the spaces represent newlines in the 
+original text." The word "lines" here represents the spaces in the input.
+So the length of a single frobnicated word does not affect the results.
+But the number of frobnicated words matters.
+
+1. Measure the differences in performance between sfrob and sfrobu
+using the time command:
+
+Firstly I write a c++ program to produce a file that contains 10000 lines
+of input. Then I use the time command:
+
+time ./sfrob < output.txt >output1.txt
+
+real	0m0.010s
+user	0m0.007s
+sys	0m0.000s
+
+time ./sfrobu < output.txt >output1.txt
+
+real	0m0.083s
+user	0m0.013s
+sys	0m0.067s
+
+It is clear that sfrob takes much less time than sfrobu. 
+So the buffered version runs much more faster,
+and it takes less time for syscalls. The real, user, sys, which correspon to
+time fron start to finish of the call, CPU time spent in user-mode code,
+CPU time spent in the kernel in the process, are all less for sfrob.
+
+With varing numbers of inputlines,
+estimate the number of comparisons as a function of the number of input lines:
+
+Firstly temporarily add some codes to the file to find the number of comparisons:
+Add a counter in the function frobcmp and print the value at the end of program.
+
+Secondly produce files with 100 lines of input, 1000 lines of input, 
+10000 lines of input, and 100000 lines of input.
+
+100 lines    Comparisons: 316
+1000 lines   Comparisons: 4932
+10000 lines  Comparisons: 64608
+100000 lines Comparisons: 815024 
+
+Then we apply the linear regression to calculate the required function:
+using y to represent the number of comparisons,
+x to represent the number of lines.
+
+y = 8.207 * x - 6738 (the approximate result)
+
+2. Compare the overall performance of 
+   sfrob, sfrobu, sfrobs, sfrobu -f and sfrobs -f
+using the time command:
+
+Firstly I produce a large file to test.
+Then using the time command:
+
+time ./sfrob < output.txt >output1.txt
+
+real	0m0.690s
+user	0m0.611s
+sys	0m0.043s
+
+time ./sfrobu < output.txt >output1.txt
+
+real	0m8.018s
+user	0m1.475s
+sys	0m6.508s
+
+time ./sfrobs < output.txt >output1.txt
+
+real	0m0.248s
+user	0m0.199s
+sys	0m0.035s
+
+time ./sfrobu -f < output.txt >output1.txt
+
+real	0m8.156s
+user	0m1.813s
+sys	0m6.304s
+
+time ./sfrobs -f < output.txt >output1.txt
+
+real	0m0.457s
+user	0m0.401s
+sys	0m0.048s
+
+From the above tests, obviously, the shell script runs fastest among all the versions.
+Since Linux is developed by elites all over the world.
+The unbuffered version runs slowest.
+Besides, the shell script runs a little bit slower for the -f option,
+so does the sfrobu. (but the time difference for sfrobu is more subtle.)

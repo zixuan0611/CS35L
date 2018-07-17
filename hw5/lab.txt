@@ -1,0 +1,173 @@
+A lab notebook for the laboratory: Buffered versus unbuffered I/O
+
+1. first write the required two program tr2b.c and tr2u.c
+
+2. make them executable:
+gcc -std=c11 tr2b.c -o tr2b
+gcc -std=c11 tr2u.c -o tr2u
+
+3. create a file that contains at least 5000000 bytes:
+head --bytes=5000000 /dev/urandom > output.txt
+
+4. use the strace command
+(a) when copying one file to another:
+strace -c ./tr2b 'a' 'w' < output.txt > tr2ba.txt
+
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 27.71    0.000023           6         4           mprotect
+ 14.46    0.000012           6         2           read
+ 14.46    0.000012          12         1           write
+ 14.46    0.000012           3         4           fstat
+ 13.25    0.000011          11         1           munmap
+ 10.84    0.000009           1         9           mmap
+  4.82    0.000004           4         1           arch_prctl
+  0.00    0.000000           0         2           open
+  0.00    0.000000           0         2           close
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000083                    29         1 total
+
+strace -c ./tr2u 'a' 'w' < output.txt > tr2ua.txt
+
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 55.67   23.718186           5   5000000           write
+ 44.33   18.884782           4   5000002           read
+  0.00    0.000041           6         7           mmap
+  0.00    0.000031           8         4           mprotect
+  0.00    0.000014           7         2           open
+  0.00    0.000011          11         1           munmap
+  0.00    0.000007           4         2           close
+  0.00    0.000007           4         2           fstat
+  0.00    0.000007           7         1         1 access
+  0.00    0.000007           7         1           execve
+  0.00    0.000005           5         1           brk
+  0.00    0.000003           3         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00   42.603101              10000024         1 total
+
+However, I later found the command 
+head --bytes=5000000 /dev/urandom > output.txt
+will lead to incorrect results and analysis.
+
+So I used c++ to write a loop that can append bytes to create the huge file.
+Then I used the following command to create the input file:
+g++ -o out create.cpp
+./out > output.txt
+
+Again, with the strace command:
+strace -c ./tr2b 'a' 'w' < output.txt > tr2ba.txt
+
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 62.44    0.000856           1       611           write
+ 35.74    0.000490           1       613           read
+  0.66    0.000009           9         1         1 access
+  0.51    0.000007           7         1           execve
+  0.36    0.000005           1         9           mmap
+  0.29    0.000004           4         1           brk
+  0.00    0.000000           0         2           open
+  0.00    0.000000           0         2           close
+  0.00    0.000000           0         4           fstat
+  0.00    0.000000           0         4           mprotect
+  0.00    0.000000           0         1           munmap
+  0.00    0.000000           0         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.001371                  1250         1 total
+
+strace -c ./tr2u 'a' 'w' < output.txt > tr2ua.txt
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 55.33   24.877208           5   5000000           write
+ 44.67   20.083632           4   5000002           read
+  0.00    0.000043           6         7           mmap
+  0.00    0.000031           8         4           mprotect
+  0.00    0.000015           8         2           open
+  0.00    0.000011          11         1           munmap
+  0.00    0.000010           5         2           close
+  0.00    0.000007           4         2           fstat
+  0.00    0.000007           7         1         1 access
+  0.00    0.000007           7         1           execve
+  0.00    0.000004           4         1           brk
+  0.00    0.000003           3         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00   44.960978              10000024         1 total
+
+
+It is clear that tr2b uses fewer syscalls than tr2u.
+Thus, we can conclude that applying the buffered I/O uses fewer syscalls.
+
+(b) when copying a file to your terminal
+strace -c ./tr2b 'a' 'w' < output.txt
+
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 92.78    0.018424           4      4883           write
+  6.46    0.001283           2       613           read
+  0.26    0.000052           6         9           mmap
+  0.15    0.000030           8         4           mprotect
+  0.09    0.000018           5         4           fstat
+  0.07    0.000013           7         2           open
+  0.06    0.000011          11         1           munmap
+  0.04    0.000007           7         1         1 access
+  0.04    0.000007           7         1           execve
+  0.03    0.000006           3         2           close
+  0.02    0.000004           4         1           brk
+  0.02    0.000003           3         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.019858                  5522         1 total
+
+strace -c ./tr2u 'a' 'w' < output.txt
+
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 55.17   29.304844           6   5000000           write
+ 44.83   23.812419           5   5000002           read
+  0.00    0.000227          32         7           mmap
+  0.00    0.000148          37         4           mprotect
+  0.00    0.000098          49         2           open
+  0.00    0.000073          73         1           munmap
+  0.00    0.000052          26         2           close
+  0.00    0.000041          41         1         1 access
+  0.00    0.000040          20         2           fstat
+  0.00    0.000034          34         1           arch_prctl
+  0.00    0.000032          32         1           brk
+  0.00    0.000000           0         1           execve
+------ ----------- ----------- --------- --------- ----------------
+100.00   53.118008              10000024         1 total
+
+It is clear that tr2b uses fewer syscalls than tr2u.
+Thus, we can conclude that applying the buffered I/O uses fewer syscalls.
+
+5. use the time command:
+time ./tr2b 'a' 'w' < output.txt > tr2bb.txt
+
+
+real	0m0.202s
+user	0m0.135s
+sys	0m0.007s
+
+time ./tr2u 'a' 'w' < output.txt > tr2ub.txt
+
+real	0m12.078s
+user	0m1.505s
+sys	0m10.530s
+
+time ./tr2b 'a' 'w' < output.txt
+
+real	0m2.223s
+user	0m0.179s
+sys	0m0.039s
+
+time ./tr2u 'a' 'w' < output.txt
+
+real	0m8.358s
+user	0m1.254s
+sys	0m7.090s
+
+Obviously, tr2b takes much less time than tr2u.
+Applying the buffered I/O can significantly reduce the time of execution
+because it uses fewer system calls.
