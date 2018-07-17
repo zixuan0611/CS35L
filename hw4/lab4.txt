@@ -1,0 +1,194 @@
+A lab notebook for the laboratory: Debugging a C program:
+
+1. download the required files:
+   wget https://web.cs.ucla.edu/classes/winter18/cs35L/assign/coreutils-with-bug.tar.gz
+
+2. untar the files:
+   tar -xvzf coreutils-with-bug.tar.gz
+
+3. get into the required directory:
+   cd coreutils-with-bug
+
+4. configure the files:
+   ./configure
+
+5. do the make:
+   make
+
+6. It gave the following output as error message:
+In file included from utimecmp.c:41:0:
+utimens.h:2:5: error: conflicting types for 'futimens'
+ int futimens (int, char const *, struct timespec const [2]);
+     ^~~~~~~~
+In file included from utimecmp.h:25:0,
+                 from utimecmp.c:25:
+/usr/include/sys/stat.h:373:12: note: previous declaration of 'futimens' was here
+ extern int futimens (int __fd, const struct timespec __times[2]) __THROW;
+            ^~~~~~~~
+make[3]: *** [Makefile:659: utimecmp.o] Error 1
+make[3]: Leaving directory '/w/home.14/class/classkrn/coreutils-with-bug/lib'
+make[2]: *** [Makefile:414: all] Error 2
+make[2]: Leaving directory '/w/home.14/class/classkrn/coreutils-with-bug/lib'
+make[1]: *** [Makefile:419: all-recursive] Error 1
+make[1]: Leaving directory '/w/home.14/class/classkrn/coreutils-with-bug'
+make: *** [Makefile:357: all] Error 2
+
+We can see that there exist some problems with the function definition.
+The parameters of the function are not consistent and thus causes an error.
+
+7. get the renaming patch:
+   wget https://web.cs.ucla.edu/classes/winter18/cs35L/assign/coreutils.diff
+
+8. apply the patch:
+   patch -p0 < coreutils.diff
+It gave the following output:
+patching file lib/utimens.c
+patching file lib/utimens.h
+patching file src/copy.c
+patching file src/tee.c
+patching file src/touch.c
+
+9. build the coreutils again with the patch:
+   make
+We do not find any error this time.
+
+10. open the patch file to look for why the patch fix the problem:
+    vim coreutils.diff
+We can see that it has changed the function name from "futimens"
+to "coreutils_futimens". This fixes the problems because we have noted that
+there is something to do with the function definition. Renaming the function
+fixes the problem because it resolves the parameter conflicts of the function.
+
+11. reproduce the problem:
+    cd
+    tmp=$(mktemp -d)
+    cd $tmp
+    touch -d '1918-11-11 11:00 GMT' wwi-armistice
+    touch now
+    sleep 1
+    touch now1
+    TZ=UTC0 ~/coreutils-with-bug/src/ls -lt --full-time wwi-armistice now now1
+
+It gave the following output:
+-rw-r--r-- 1 classkrn class 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+-rw-r--r-- 1 classkrn class 0 2018-02-11 14:34:22.421765987 +0000 now1
+-rw-r--r-- 1 classkrn class 0 2018-02-11 14:34:12.272595628 +0000 now
+There exsists the bug.
+
+12. use the gdb to find the problem:
+    gdb ~/coreutils-with-bug/src/ls
+take a look at the relevant function:
+(gdb) info functions
+set a breakpoint at sort_files:
+(gdb) break sort_files
+run the program:
+(gdb) run -lt --full-time wwi-armistice now now1
+we use si to step into the operations and find that there is a switch.
+we continue to use si and find the line 2975:
+2975		      func = sort_reverse ? rev_cmp_mtime : compare_mtime;
+then we open the original files and find that the function compare_mtime will
+be used instead of rev_cmp_mtime because we use the -lt argument.
+
+set a breakpoint at sort_files and compare_mtime:
+(gdb) break sort_files
+(gdb) break compare_mtime
+(gdb) run -lt --full-time wwi-armistice now now1
+
+we use s and si and find the following:
+(gdb) s
+timespec_cmp (b=..., a=...) at ../lib/timespec.h:48
+48	  int diff = a.tv_sec - b.tv_sec;
+(gdb) list
+43	/* Return negative, zero, positive if A < B, A == B, A > B, respectively.
+44	   Assume the nanosecond components are in range, or close to it.  */
+45	static inline int
+46	timespec_cmp (struct timespec a, struct timespec b)
+47	{
+48	  int diff = a.tv_sec - b.tv_sec;
+49	  return diff ? diff : a.tv_nsec - b.tv_nsec;
+50	}
+51	
+52	# if ! HAVE_DECL_NANOSLEEP
+(gdb) s
+49	  return diff ? diff : a.tv_nsec - b.tv_nsec;
+
+we can find that the returned diff may cause an integer overflow because
+this function returns the integer that is the difference of a.tv_sec
+and b.tv_sec. So to fix the problem, we compare them instead of doing 
+subtraction due to the reason that subtraction is likely to cause the overflow.
+
+(gdb) quit
+
+13. fix the problem by creating a new patch:
+    cd
+copy the file to create a new file to be edited:
+    cp coreutils-with-bug/lib/timespec.h timespec.h 
+
+use emacs to edit timespec.h:
+    emacs timespec.h
+
+we go to the line 48 and modify the timespec_cmp function to:
+if(a.tv_sec > b.tv_sec) {return 1;}
+else if(a.tv_sec < b.tv_sec) {return -1;}
+else {return 0;}
+
+then we add a ChangeLog entry using C-x 4 a:
+2018-02-12  Zixuan Wang  <classkrn@lnxsrv09.seas.ucla.edu>
+
+        * timespec.h: avoid the overflow by direct comparison instead of
+        subtraction   fix the problems of incorrectly displayed time
+
+we are done with the emacs.
+
+14. create the patch by using diff -u:
+diff -u coreutils-with-bug/lib/timespec.h timespec.h > coreutils-with-bug/lab4.diff
+
+15. use the new patch to test if the problem has been fixed:
+    cd coreutils-with-bug
+we replace "timespec.h" with "lib/timespec.h" and do the patch:
+    patch -p0 < lab4.diff
+output: patching file lib/timespec.h
+
+do the make:
+    make
+
+run with the newly patched version:
+cd
+tmp=$(mktemp -d)
+cd $tmp
+touch -d '1918-11-11 11:00 GMT' wwi-armistice
+touch now
+sleep 1
+touch now1
+TZ=UTC0 ~/coreutils-with-bug/src/ls -lt --full-time wwi-armistice now now1
+
+The output is:
+-rw-r--r-- 1 classkrn class 0 2018-02-12 14:01:58.371096978 +0000 now1
+-rw-r--r-- 1 classkrn class 0 2018-02-12 14:01:46.578899868 +0000 now
+-rw-r--r-- 1 classkrn class 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+
+The bug has been fixed.
+
+15. run using the SEASnet in the home directory:
+cd
+touch -d '1918-11-11 11:00 GMT' wwi-armistice
+touch now
+sleep 1
+touch now1
+TZ=UTC0 ls -lt --full-time wwi-armistice now now1
+
+The output is:
+-rw-r--r-- 1 classkrn class 0 2054-12-17 17:28:16.000000000 +0000 wwi-armistice
+-rw-r--r-- 1 classkrn class 0 2018-02-12 14:13:26.390781000 +0000 now1
+-rw-r--r-- 1 classkrn class 0 2018-02-12 14:13:15.065714000 +0000 now
+
+So we can see that SEASnet take the date 1918-11-11 (which is in the past)
+as the date 20154-12-13 (which is in the very future).
+
+It is known that the time stamps are defined as the number of seconds that have
+elapsed since 1970-01-01 00:00:00 (Unix time). The SEASnet applies an unsigned
+32-bit system for the time stamps but the local file system in Linux applied
+signed bit to note the past and the future. Thus, when we use the SEASnet, it
+displays a future time because it cannot recognize the signed bit which tells
+us whether it is past or future. Hence, we need to touch on the local file
+system to make the date appear properly.
