@@ -1,0 +1,47 @@
+The answers to questions Q1 through Q4 noted above:
+
+Q1: Brady's patch remove the line "case_long_iso_time_style:" because the line
+is repeated twice. Also, this line is basically a statement for the goto 
+command in the switch part. It is not necessary to remove this line because
+it does nothing useful and affects nothing. The program still works and will
+automatically falls into the next line.
+
+Q2: The patched version of Coreutils will introduce other problems in the
+case that the users don't speak English and don't understand English-format
+dates. This will cause problems referred to the locale of foreign countries
+since it only uses the traditional Unix date. It will also cause problems if
+other related programs are written for the YYYY-MM-DD date.
+
+Q3: We ran the randline.py with the following command:
+    python randline.py /dev/null
+    It has an IndexError. The output is as follows:
+Traceback (most recent call last):
+  File "randline.py", line 47, in <module>
+    main()
+  File "randline.py", line 41, in main
+    sys.stdout.write(generator.chooseline())
+  File "randline.py", line 11, in chooseline
+    return random.choice(self.lines)
+  File "/usr/lib64/python2.7/random.py", line 274, in choice
+return seq[int(self.random() * len(seq))]  # raises IndexError if seq is empty
+IndexError: list index out of range
+
+This is mainly because that we do not specify the condition that
+"numlines = 0" in the randline.py. So the program will assume that 
+there is something in the file. This will lead to the undefined behavior
+since it tries to read a line from the file with no lines and will have
+trouble indexing the contents of the file.
+
+Q4: I ran the program with python3 and it gave the following output:
+  File "randline.py", line 42
+    except IOError as (errno, strerror):
+                      ^
+SyntaxError: invalid syntax
+
+The line with problems is as follows:
+except IOError as (errno, strerror):
+
+This is because in python3, IOError has been merged into OSError.
+So python3 does not allow argument like this and the code thus has
+an syntax error. Since python3 removes this feature, we should write
+OSError instead of IOError. (We could write except (OSError) as err: ) 

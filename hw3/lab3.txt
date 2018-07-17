@@ -1,0 +1,147 @@
+A lab notebook for the Laboratory: Installing a small change to a big package:
+
+1. I first used the wget to download the Coreutils 7.6:
+   wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-7.6.tar.gz
+
+2. Then I untar the file:
+   tar -xzvf coreutils-7.6.tar.gz
+
+3. I created a directory coreutils and got its path:
+   mkdir coreutils
+   cd
+   pwd
+
+4. I got into the directory coreutils-7.6:
+   cd
+   cd coreutils-7.6
+
+5. I used the following configure command:
+   ./configure --prefix=/u/eng/class/classkrn/coreutils
+
+6. Then I installed the package in the created directory:
+   make
+   make install
+
+7. I got into the created directory:
+   cd
+   cd coreutils
+
+8. I set the locale to the value en_US.UTF-8:
+   export LC_ALL='en_US.UTF-8'
+
+9. I reproduced the bug on the machine with the following commands:
+   cd bin
+   ./ls -l /bin/bash
+  
+    It gave the following output:
+   -rwxr-xr-x 1 root root 960632 2017-08-03 06:36 /bin/bash
+   This is clearly not the traditional Unix format.
+
+10. I got into the directory coreutils-7.6 again:
+    cd
+    cd coreutils-7,6
+
+11. I copied the patch from the given link to a file called patchFile:
+    vim patchFile
+    Then I ran the following command:
+    patch -p1 < patchFile
+
+12. I built the fixed version:
+    make
+
+It gave the following output:
+make  all-recursive
+make[1]: Entering directory `/w/home.14/class/classkrn/coreutils-7.6'
+Making all in lib
+make[2]: Entering directory `/w/home.14/class/classkrn/coreutils-7.6/lib'
+  GEN    configmake.h
+make  all-recursive
+make[3]: Entering directory `/w/home.14/class/classkrn/coreutils-7.6/lib'
+make[4]: Entering directory `/w/home.14/class/classkrn/coreutils-7.6/lib'
+  GEN    configmake.h
+make[4]: Leaving directory `/w/home.14/class/classkrn/coreutils-7.6/lib'
+make[3]: Leaving directory `/w/home.14/class/classkrn/coreutils-7.6/lib'
+make[2]: Leaving directory `/w/home.14/class/classkrn/coreutils-7.6/lib'
+Making all in src
+make[2]: Entering directory `/w/home.14/class/classkrn/coreutils-7.6/src'
+make  all-am
+make[3]: Entering directory `/w/home.14/class/classkrn/coreutils-7.6/src'
+  CC     ls.o
+  CCLD   dir
+  CCLD   vdir
+  CCLD   ls
+make[3]: Leaving directory `/w/home.14/class/classkrn/coreutils-7.6/src'
+make[2]: Leaving directory `/w/home.14/class/classkrn/coreutils-7.6/src'
+Making all in doc
+make[2]: Entering directory `/w/home.14/class/classkrn/coreutils-7.6/doc'
+make[2]: Nothing to be done for `all'.
+make[2]: Leaving directory `/w/home.14/class/classkrn/coreutils-7.6/doc'
+Making all in man
+make[2]: Entering directory `/w/home.14/class/classkrn/coreutils-7.6/man'
+  GEN    dir.1
+  GEN    vdir.1
+  GEN    ls.1
+make[2]: Leaving directory `/w/home.14/class/classkrn/coreutils-7.6/man'
+Making all in po
+make[2]: Entering directory `/w/home.14/class/classkrn/coreutils-7.6/po'
+make[2]: Nothing to be done for `all'.
+make[2]: Leaving directory `/w/home.14/class/classkrn/coreutils-7.6/po'
+Making all in tests
+make[2]: Entering directory `/w/home.14/class/classkrn/coreutils-7.6/tests'
+make[2]: Nothing to be done for `all'.
+make[2]: Leaving directory `/w/home.14/class/classkrn/coreutils-7.6/tests'
+Making all in gnulib-tests
+make[2]: Entering directory 
+`/w/home.14/class/classkrn/coreutils-7.6/gnulib-tests'
+make  all-recursive
+make[3]: Entering directory 
+`/w/home.14/class/classkrn/coreutils-7.6/gnulib-tests'
+make[4]: Entering directory 
+`/w/home.14/class/classkrn/coreutils-7.6/gnulib-tests'
+make[4]: Nothing to be done for `all-am'.
+make[4]: Leaving directory 
+`/w/home.14/class/classkrn/coreutils-7.6/gnulib-tests'
+make[3]: Leaving directory 
+`/w/home.14/class/classkrn/coreutils-7.6/gnulib-tests'
+make[2]: Leaving directory 
+`/w/home.14/class/classkrn/coreutils-7.6/gnulib-tests'
+make[2]: Entering directory `/w/home.14/class/classkrn/coreutils-7.6'
+make[2]: Nothing to be done for `all-am'.
+make[2]: Leaving directory `/w/home.14/class/classkrn/coreutils-7.6'
+make[1]: Leaving directory `/w/home.14/class/classkrn/coreutils-7.6'
+
+The above commands basically check all the relavant directories recursively.
+It checked all the directories in coreutils-7.6 whether there exists changes
+in the files due to the patch. So after the patch, it will only recompile the
+modified files and makefile is mainly check dependencies of these files and
+manage optimizations.
+
+Additionally, we built the fixed version not installed the version.
+So, the unmodified version is in coreutils/bin and the fixed version is
+in coreutils-7.6/src.
+
+13. Finally, I tested the modified ls and installed ls:
+    cd
+
+    For a file that has been recently modified, say, coreutils-7.6.tar.gz:
+    I ran the following command for the fixed version:
+    ./coreutils-7.6/src/ls -l ./coreutils-7.6.tar.gz
+    It gave the traditional Unix date:
+    -rw-r--r-- 1 classkrn class 10014650 Feb  2 23:41 ./coreutils-7.6.tar.gz
+    Then for the installed ls:
+    ./coreutils/bin/ls -l ./coreutils-7.6.tar.gz
+    It gave the YYYY-MM-DD date instead of the traditional Unix date:
+  -rw-r--r-- 1 classkrn class 10014650 2018-02-02 23:41 ./coreutils-7.6.tar.gz
+    
+    For a file that is at least a year old:
+    I first artificially mark the file as being a year old:
+    touch -t 1607030000 coreutils-7.6.tar.gz
+    I ran the following command for the fixed version:
+    ./coreutils-7.6/src/ls -l ./coreutils-7.6.tar.gz
+    It gave the traditional Unix date:
+    -rw-r--r-- 1 classkrn class 10014650 Jul  3  2016 ./coreutils-7.6.tar.gz
+    Then for the installed ls:
+    ./coreutils/bin/ls -l ./coreutils-7.6.tar.gz
+    It gave the YYYY-MM-DD date instead of the traditional Unix date:
+  -rw-r--r-- 1 classkrn class 10014650 2016-07-03 00:00 ./coreutils-7.6.tar.gz
+
